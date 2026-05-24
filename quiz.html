@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>歴史クイズ</title>
+
+<style>
+body { font-family:sans-serif; text-align:center; padding:20px; }
+#question { font-size:22px; margin:40px 0; }
+#answer { font-size:24px; color:green; margin:20px; }
+button { font-size:18px; padding:15px; margin:10px; width:80%; max-width:300px; }
+</style>
+</head>
+
+<body>
+
+<h1>歴史クイズ</h1>
+
+<!-- ✅ ファイル選択 -->
+<div id="load">
+<p>問題ファイルを選択してください</p>
+<input type="file" id="fileInput"><br>
+<button onclick="loadFile()">読み込む</button>
+</div>
+
+<!-- ✅ スタート -->
+<div id="start" style="display:none;">
+<button onclick="start(false)">順番</button>
+<button onclick="start(true)">シャッフル</button>
+</div>
+
+<!-- ✅ 問題 -->
+<div id="questionScreen" style="display:none;">
+<p id="question"></p>
+<button onclick="showAnswer()">回答を見る</button>
+</div>
+
+<!-- ✅ 回答 -->
+<div id="answerScreen" style="display:none;">
+<p id="question2"></p>
+<p id="answer"></p>
+<button onclick="next()">次へ</button>
+</div>
+
+<script>
+
+let quiz = [];
+let index = 0;
+let shuffle = false;
+
+// ✅ ファイル読み込み
+function loadFile(){
+  const file = document.getElementById("fileInput").files[0];
+
+  if(!file){
+    alert("ファイルを選択してください！");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+    const text = e.target.result;
+
+    quiz = text.split("\n")
+      .map(line => line.trim())
+      .filter(line => line.includes("｜"))
+      .map(line => {
+        let p = line.split("｜");
+        return { q: p[0], a: p[1] };
+      });
+
+    if(quiz.length === 0){
+      alert("形式が違います！");
+      return;
+    }
+
+    document.getElementById("load").style.display = "none";
+    document.getElementById("start").style.display = "block";
+  };
+
+  reader.readAsText(file);
+}
+
+// ✅ スタート
+function start(mode){
+  shuffle = mode;
+  index = 0;
+
+  document.getElementById("start").style.display="none";
+  document.getElementById("questionScreen").style.display="block";
+
+  showQuestion();
+}
+
+// ✅ 問題表示
+function showQuestion(){
+  document.getElementById("question").textContent =
+    "Q" + (index+1) + ": " + quiz[index].q;
+}
+
+// ✅ 回答表示
+function showAnswer(){
+  document.getElementById("questionScreen").style.display="none";
+  document.getElementById("answerScreen").style.display="block";
+
+  document.getElementById("question2").textContent =
+    "Q" + (index+1) + ": " + quiz[index].q;
+
+  document.getElementById("answer").textContent =
+    quiz[index].a;
+}
+
+// ✅ 次へ
+function next(){
+  index = shuffle
+    ? Math.floor(Math.random()*quiz.length)
+    : (index+1)%quiz.length;
+
+  document.getElementById("answerScreen").style.display="none";
+  document.getElementById("questionScreen").style.display="block";
+
+  showQuestion();
+}
+
+</script>
+
+</body>
+</html>
